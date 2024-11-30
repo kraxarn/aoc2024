@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(aoc2024 main.c)
 
-set(PK_ENABLE_OS ON)
 include(deps/pocketpy.cmake)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE pocketpy)
