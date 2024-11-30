@@ -1,0 +1,4 @@
+input/
+cmake-build-*/
+.venv/
+.idea/
