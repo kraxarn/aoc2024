@@ -1,7 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <regex.h>
+#include <string.h>
 
 #include "pocketpy.h"
+
+static bool re_find_all(const int argc, py_Ref argv)
+{
+	PY_CHECK_ARGC(2);
+	PY_CHECK_ARG_TYPE(0, tp_str);
+	PY_CHECK_ARG_TYPE(1, tp_str);
+
+	const char *pattern = py_tostr(py_arg(0));
+	const char *string = py_tostr(py_arg(1));
+
+	regex_t regex;
+	regmatch_t p_match[1];
+	size_t offset = 0;
+
+	if (regcomp(&regex, pattern, REG_EXTENDED) != 0)
+	{
+		fprintf(stderr, "Failed to compile regex");
+		return false;
+	}
+
+	py_newlist(py_retval());
+
+	while (regexec(&regex, string + offset, 1, p_match, 0) == 0)
+	{
+		const size_t start = offset + p_match[0].rm_so;
+		const size_t end = offset + p_match[0].rm_eo;
+		const size_t len = end - start;
+
+		char *match = malloc((len + 1) * sizeof(char));
+		strncpy(match, string + start, len);
+		match[len] = '\0';
+
+		py_Ref reg = py_getreg(0);
+		py_newstr(reg, match);
+		py_list_append(py_retval(), reg);
+
+		offset += p_match[0].rm_eo;
+		free(match);
+	}
+
+	return true;
+}
 
 static bool read_lines(const int argc, py_Ref argv)
 {
@@ -69,8 +113,12 @@ int main(const int argc, const char **argv)
 	py_initialize();
 
 	py_Ref reg = py_getreg(0);
+
 	py_newnativefunc(reg, read_lines);
 	py_setglobal(py_name("read_lines"), reg);
+
+	py_newnativefunc(reg, re_find_all);
+	py_setglobal(py_name("re_find_all"), reg);
 
 	const bool ok = py_exec(buffer, "<string>", EXEC_MODE, nullptr);
 
