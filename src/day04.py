@@ -5,6 +5,7 @@ lines: list[str] = read_lines("input/04")
 grid: list[list[str]] = []
 
 result1 = 0
+result2 = 0
 
 for line in lines:
 	grid.append([ch for ch in line])
@@ -27,6 +28,14 @@ def find(char: str, orig_x: int, orig_y: int) -> typing.Generator[
 				yield curr_x, curr_y
 
 
+def find2(char: str, orig_x: int, orig_y: int) -> typing.Generator[
+	typing.Tuple[int, int], None, None
+]:
+	for pt in [(0, -2), (2, 0), (0, -2), (-2, 0)]:
+		if get_char(orig_x - pt[0], orig_y - pt[1]) == char:
+			yield orig_x - pt[0], orig_y - pt[1]
+
+
 for y in range(len(grid)):
 	for x in range(len(grid[y])):
 		if grid[y][x] == "X":
@@ -39,5 +48,21 @@ for y in range(len(grid)):
 					continue
 				result1 += 1
 
+for y in range(len(grid)):
+	for x in range(len(grid[y])):
+		if get_char(x, y) == "A":
+			if get_char(x - 1, y + 1) == "S" and get_char(x - 1, y - 1) == "S":
+				if get_char(x + 1, y + 1) == "M" and get_char(x + 1, y - 1) == "M":
+					result2 += 1
+			if get_char(x - 1, y + 1) == "M" and get_char(x - 1, y - 1) == "M":
+				if get_char(x + 1, y + 1) == "S" and get_char(x + 1, y - 1) == "S":
+					result2 += 1
+			if get_char(x - 1, y - 1) == "S" and get_char(x + 1, y - 1) == "S":
+				if get_char(x - 1, y + 1) == "M" and get_char(x + 1, y + 1) == "M":
+					result2 += 1
+			if get_char(x - 1, y - 1) == "M" and get_char(x + 1, y - 1) == "M":
+				if get_char(x - 1, y + 1) == "S" and get_char(x + 1, y + 1) == "S":
+					result2 += 1
+
 print("Part 1:", result1)
-#
+print("Part 2:", result2)
