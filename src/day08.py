@@ -57,3 +57,17 @@ for current_frequency, current_positions in antennas.items():
 			anti_nodes.add(node_position)
 
 print("Part 1:", len(anti_nodes))
+anti_nodes.clear()
+
+for current_frequency, current_positions in antennas.items():
+	for current_position in current_positions:
+		for target_position in antennas[current_frequency]:
+			if current_position == target_position:
+				continue
+			diff = target_position - current_position
+			node_position = target_position
+			while get_char(node_position) is not None:
+				anti_nodes.add(node_position)
+				node_position += diff
+
+print("Part 2:", len(anti_nodes))
