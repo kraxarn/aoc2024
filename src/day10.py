@@ -7,6 +7,7 @@ lines: list[str] = read_lines("input/10")
 grid: list[list[int]] = []
 
 result1 = 0
+result2 = 0
 
 
 class Direction(enum.Enum):
@@ -62,11 +63,25 @@ def get_heads(pos: Position) -> set[Position]:
 	return result
 
 
+def get_score(pos: Position) -> int:
+	height = get_height(pos)
+	if height == 9:
+		return 1
+	result = 0
+	for direction in [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]:
+		target_position = pos.go(direction)
+		if get_height(target_position) == height + 1:
+			result += get_score(target_position)
+	return result
+
+
 for y in range(len(grid)):
 	for x in range(len(grid[y])):
 		position = Position(x, y)
 		if get_height(position) != 0:
 			continue
 		result1 += len(get_heads(position))
+		result2 += get_score(position)
 
 print("Part 1:", result1)
+print("Part 2:", result2)
