@@ -1,6 +1,6 @@
 import dataclasses
 
-lines: list[str] = read_lines("input/13")
+lines: list[str] = read_lines("input/14")
 
 map_width = 101
 map_height = 103
@@ -13,6 +13,9 @@ class Position:
 
 	def __add__(self, other: "Position") -> "Position":
 		return Position(self.x + other.x, self.y + other.y)
+
+	def __hash__(self) -> int:
+		return hash((self.x, self.y))
 
 
 @dataclasses.dataclass
@@ -39,12 +42,38 @@ def parse_position(value: str) -> Position:
 
 robots: list[Robot] = []
 
+
+def draw_robots() -> None:
+	positions: set[Position] = set()
+	for robot in robots:
+		positions.add(robot.position)
+	for y in range(map_height):
+		for x in range(map_width):
+			if Position(x, y) in positions:
+				print("#", end="")
+			else:
+				print(" ", end="")
+		print()
+
+
+def all_unique() -> bool:
+	positions: set[Position] = set()
+	for robot in robots:
+		if robot.position in positions:
+			return False
+		positions.add(robot.position)
+	return True
+
+
 for line in lines:
 	position = line[line.find("p=") + 2:line.find(" ")]
 	velocity = line[line.find("v=") + 2:]
 	robots.append(Robot(parse_position(position), parse_position(velocity)))
 
+seconds = 0
+
 for _ in range(100):
+	seconds += 1
 	for robot in robots:
 		robot.walk()
 
@@ -63,3 +92,12 @@ for robot in robots:
 			quadrants[3] += 1
 
 print("Part 1:", quadrants[0] * quadrants[1] * quadrants[2] * quadrants[3])
+
+while True:
+	seconds += 1
+	for robot in robots:
+		robot.walk()
+	if all_unique():
+		break
+
+print("Part 2:", seconds)
