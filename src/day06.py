@@ -6,6 +6,8 @@ lines: list[str] = read_lines("input/06")
 
 grid: list[list[str]] = []
 
+result2 = 0
+
 
 class Direction(enum.Enum):
 	NONE = 0
@@ -36,8 +38,11 @@ class Position:
 		return hash((self.x, self.y))
 
 
-for line in lines:
-	grid.append([ch for ch in line])
+def load_grid():
+	global grid
+	grid = []
+	for line in lines:
+		grid.append([ch for ch in line])
 
 
 def get_char(pos: Position) -> typing.Optional[str]:
@@ -60,33 +65,58 @@ def turn(dir: Direction) -> Direction:
 
 
 positions: list[Position] = []
-direction = Direction.NONE
+directions: list[Direction] = []
+
+load_grid()
 
 for y in range(len(grid)):
 	for x in range(len(grid[y])):
 		position = Position(x, y)
 		if get_char(position) == "^":
 			positions.append(position)
-			direction = Direction.UP
+			directions.append(Direction.UP)
 			break
 
 if len(positions) <= 0:
 	raise "Starting point not found"
 
-while True:
-	next_position = positions[-1].go(direction)
-	next_char = get_char(next_position)
-	if next_char == "#":
-		if direction == Direction.LEFT:
-			direction = Direction.UP
-		else:
-			direction = turn(direction)
-		continue
-	if next_char == "." or next_char == "^":
-		positions.append(next_position)
-		continue
-	if next_char is None:
-		break
-	raise ValueError(next_char)
+
+def walk() -> bool:
+	while True:
+		next_position = positions[-1].go(directions[-1])
+		next_char = get_char(next_position)
+		if next_char == "#":
+			if directions[-1] == Direction.LEFT:
+				directions.append(Direction.UP)
+			else:
+				directions.append(turn(directions[-1]))
+			positions.append(positions[-1])
+			continue
+		if next_char == "." or next_char == "^":
+			try:
+				idx = positions.index(next_position)
+				if directions[idx] == directions[-1]:
+					return False
+			except ValueError:
+				pass
+			positions.append(next_position)
+			directions.append(directions[-1])
+			continue
+		if next_char is None:
+			return True
+		raise ValueError(next_char)
+
+
+walk()
 
 print("Part 1:", len(set(positions)))
+
+for position in set(positions[1:]):
+	load_grid()
+	positions = positions[:1]
+	directions = directions[:1]
+	grid[position.y][position.x] = "#"
+	if not walk():
+		result2 += 1
+
+print("Part 2:", result2)
